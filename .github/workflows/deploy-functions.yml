@@ -1,0 +1,31 @@
+name: Deploy Firebase Function
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Install Functions Dependencies
+        run: cd functions && npm ci || npm i
+
+      - name: Deploy Function
+        run: firebase deploy --only functions:generateResetLink --project "$FIREBASE_PROJECT_ID" --token "$FIREBASE_TOKEN"
+        env:
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
